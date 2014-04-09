@@ -1,20 +1,9 @@
-deck = 
-  ['KH', 'QH', 'JH', 'AH', '2H', '3H','4H',
-   '5H', '6H', '7H', '8H', '9H', '10H',
-   'KC', 'QC', 'JC', 'AC', '2C', '3C','4C',
-   '5C', '6C', '7C', '8C', '9C', '10C',
-   'KD', 'QD', 'JD', 'AD', '2D', '3D','4D',
-   '5D', '6D', '7D', '8D', '9D', '10D',
-   'KS', 'QS', 'JS', 'AS', '2S', '3S','4S',
-   '5S', '6C', '7S', '8S', '9S', '10S',]
-
-play_deck = []
 
 # ~~~~~ METHOD SECTION ~~~~~~~
 
 # Deals a random card to player and dealer
 def hit(deck)
-  rand_card = deck.sample  # pulls a random card from the 'deck'
+  rand_card = deck.sample  # pulls a random card from the playing deck.
   deck.delete(rand_card)
 end
 
@@ -45,6 +34,7 @@ end
 def card_total(hand)
   total = 0
   ace = hand.select {|x| x[0] == 'A'}
+  # Calculation of hand without aces.
   if ace == []
     hand.each do |x|
       x = x[0..-2].to_i
@@ -52,38 +42,62 @@ def card_total(hand)
     end
     total
   else
-    hand.delete(ace)
+  # Calculation of hand with ace(s)
+    # Delete aces from hand array
+    ace.each do |a|
+      hand.each {|x| hand.delete(a) if x == a}
+    end
+    # Calculate hand without aces
     hand.each do |x|
       x = x[0..-2].to_i
       x == 0? total += 10 : total += x
     end
-    hand << ace
-    if total <= 10
-      total += 11
+    hand += ace # concatenate ace array
+    # Add the value of ace(s) to the current total
+    nr_ace = ace.length
+    case nr_ace
+    when 1
+      total <= 10? total += 11 : total += 1
+    when 2
+      total <= 9? total += 12 : total += 2
+    when 3
+      total <= 8? total += 13 : total += 3
     else
-      total += 1
+      total <= 7? total += 14 : total += 4
     end
    total 
   end
 end
 
-def greeting(name)
+def greeting(name) # remove this...
   puts "Hi #{name} enter '1' to start or '2' to cancel."
   gets.chomp
 end
 
+deck = 
+  ['KH', 'QH', 'JH', 'AH', '2H', '3H','4H',
+   '5H', '6H', '7H', '8H', '9H', '10H',
+   'KC', 'QC', 'JC', 'AC', '2C', '3C','4C',
+   '5C', '6C', '7C', '8C', '9C', '10C',
+   'KD', 'QD', 'JD', 'AD', '2D', '3D','4D',
+   '5D', '6D', '7D', '8D', '9D', '10D',
+   'KS', 'QS', 'JS', 'AS', '2S', '3S','4S',
+   '5S', '6C', '7S', '8S', '9S', '10S',]
+
+play_deck = []
+
 # Game Intro
 puts "Please enter your preferred name."
 name = gets.chomp
-start = greeting(name) # returns 1 or 2
+resp = greeting(name) # returns 1 or 2
 
-case start
-when '1' then start
+case resp
+when '1' then resp
 when '2' then puts "Bye #{name} please come again!"
 else puts "Please enter either '1' or '2'."
 end
 
-while start == '1'
+while resp == '1'
   deck.each {|x| play_deck << x} # Initialize playing deck
   player_hand = []
   dealer_hand = []
@@ -116,6 +130,7 @@ while start == '1'
 
       if card_total(player_hand) > 21
         puts "You bust! Dealer wins"
+        resp == 'bust'
         break
       else
         puts "Would you like to 'hit' or 'stay'?" # amend this for potential keying errors
@@ -130,6 +145,7 @@ while start == '1'
       while card_total(dealer_hand) < 17
         puts "Dealer hits"
         dealer_hand << hit(play_deck)
+        puts
         puts "Dealer\'s hand:"
         dealer_hand.each {|x| print verbose(x) + ', '}
         puts
@@ -139,16 +155,12 @@ while start == '1'
         puts
         puts
         if card_total(dealer_hand) > 21
-          puts "Congratulations! Dealer bust. You win!"
           break
         end
-        if card_total(dealer_hand) >= card_total(player_hand)
-          puts "Dealer wins!"
-        else
-          puts "Congratulations! You win!"
-        end
       end
-        if card_total(dealer_hand) >= card_total(player_hand)
+        if card_total(dealer_hand) > 21
+          puts "Dealer bust! You win!"
+        elsif card_total(dealer_hand) >= card_total(player_hand)
           puts "Dealer wins!"
         else
           puts "Congratulations! You win!"
@@ -157,6 +169,6 @@ while start == '1'
   end
   # End
   puts "Enter '1' to play again or '2' to exit."
-  start = gets.chomp
+  resp = gets.chomp
 end
 
