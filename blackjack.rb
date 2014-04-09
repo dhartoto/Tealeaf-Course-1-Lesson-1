@@ -52,7 +52,7 @@ def card_total(hand)
       x = x[0..-2].to_i
       x == 0? total += 10 : total += x
     end
-    hand += ace # concatenate ace array
+    ace.each {|a| hand << a}
     # Add the value of ace(s) to the current total
     nr_ace = ace.length
     case nr_ace
@@ -67,11 +67,6 @@ def card_total(hand)
     end
    total 
   end
-end
-
-def greeting(name) # remove this...
-  puts "Hi #{name} enter '1' to start or '2' to cancel."
-  gets.chomp
 end
 
 deck = 
@@ -89,12 +84,17 @@ play_deck = []
 # Game Intro
 puts "Please enter your preferred name."
 name = gets.chomp
-resp = greeting(name) # returns 1 or 2
+puts "Hi #{name} enter '1' to start or '2' to cancel."
+resp = gets.chomp
 
-case resp
-when '1' then resp
-when '2' then puts "Bye #{name} please come again!"
-else puts "Please enter either '1' or '2'."
+while resp != '1' and resp != '2'
+  puts "Please enter '1' or '2'."
+  resp = gets.chomp
+end
+
+if resp == '2'
+  puts "Bye #{name} please come again!"
+  exit
 end
 
 while resp == '1'
@@ -104,71 +104,91 @@ while resp == '1'
 
   # First deal
   init_deal(play_deck, dealer_hand, player_hand)
-  puts "Dealer\'s hand:"
+  player_val = card_total(player_hand)
+  puts "Dealer\'s hand"
   puts "Hidden, " + verbose(dealer_hand[1])
   puts
-  puts "#{name}\'s hand:"
+  puts "#{name}\'s hand (total: #{player_val})"
   player_hand.each {|x| print verbose(x) + ', '}
   puts
   puts
 
   # Calculate if players card is 21 blackjack
-  if card_total(player_hand) == 21 
+  if player_val == 21 
     puts "Blackjack! You win!!" # Done!
   else
-    puts "Would you like to 'hit' or 'stay'?"
+    puts "To hit enter '1' to stay enter '2'."
     resp = gets.chomp
-    while resp.downcase == 'hit'
+    puts
+    while resp != '1' and resp != '2'
+      puts "Please enter '1' or '2'."
+      resp = gets.chomp
+      puts
+    end
+
+    while resp == '1'
       player_hand << hit(play_deck)
+      player_val = card_total(player_hand)
       puts "Dealer\'s hand:"
       puts "Hidden, " + verbose(dealer_hand[1])
       puts
-      puts "#{name}\'s hand:"
+      puts "#{name}\'s hand (total: #{player_val})"
       player_hand.each {|x| print verbose(x) + ', '}
       puts
       puts
 
-      if card_total(player_hand) > 21
+      if player_val > 21
         puts "You bust! Dealer wins"
         resp == 'bust'
         break
       else
-        puts "Would you like to 'hit' or 'stay'?" # amend this for potential keying errors
+        puts "To hit enter '1' to stay enter '2'."
         resp = gets.chomp
+        while resp != '1' and resp != '2'
+          puts "Please enter '1' or '2'."
+          resp = gets.chomp
+          puts
+        end
       end
     end # while end
-    
-    if resp == 'stay'
-      puts "Dealer flips her card and reveals her hand:"
+    if resp == '2'
+      dealer_val =  card_total(dealer_hand)
+      puts "Dealer flips her card and reveals her hand (total: #{dealer_val})"
       dealer_hand.each {|x| print verbose(x) + ', '}
       puts
+      puts
       while card_total(dealer_hand) < 17
-        puts "Dealer hits"
+        puts "Dealer decides to hit"
         dealer_hand << hit(play_deck)
+        dealer_val = card_total(dealer_hand)
         puts
-        puts "Dealer\'s hand:"
+        puts "Dealer\'s hand (total: #{dealer_val})"
         dealer_hand.each {|x| print verbose(x) + ', '}
         puts
         puts
-        puts "#{name}\'s hand:"
+        puts "#{name}\'s hand (total: #{player_val})"
         player_hand.each {|x| print verbose(x) + ', '}
         puts
         puts
-        if card_total(dealer_hand) > 21
+        if dealer_val > 21
           break
         end
       end
-        if card_total(dealer_hand) > 21
+        if dealer_val > 21
           puts "Dealer bust! You win!"
-        elsif card_total(dealer_hand) >= card_total(player_hand)
+        elsif dealer_val >= player_val
           puts "Dealer wins!"
         else
           puts "Congratulations! You win!"
         end
     end
   end
-  # End
+  # END OF GAME
   puts "Enter '1' to play again or '2' to exit."
   resp = gets.chomp
+  while resp != '1' and resp != '2'
+  puts "Please enter '1' or '2'."
+  resp = gets.chomp
+  end
 end
 
